@@ -7,37 +7,44 @@ body {
   font-family: Arial, sans-serif;
   background: linear-gradient(135deg, #0f172a, #020617);
   color: white;
-  min-height: 100vh;
 }
 
 header {
-  text-align: center;
   padding: 20px;
   background: #020617;
   border-bottom: 1px solid #1f2937;
+  text-align: center;
 }
 
-.search-bar {
+.controls {
   display: flex;
   justify-content: center;
   gap: 10px;
   margin-top: 10px;
+  flex-wrap: wrap;
 }
 
-.search-bar input {
-  width: 280px;
+.controls input,
+.controls select,
+.controls button {
   padding: 10px;
   border-radius: 20px;
   border: none;
   outline: none;
+}
+
+.controls input {
+  width: 220px;
   background: #111827;
   color: white;
 }
 
-.search-bar button {
-  padding: 10px 20px;
-  border-radius: 20px;
-  border: none;
+.controls select {
+  background: #111827;
+  color: white;
+}
+
+.controls button {
   background: #3b82f6;
   color: white;
   cursor: pointer;
@@ -53,10 +60,6 @@ main {
   grid-template-columns: 2fr 1fr;
   gap: 20px;
   padding: 20px;
-}
-
-.results h2 {
-  margin-top: 0;
 }
 
 .movies {
@@ -99,13 +102,13 @@ main {
   color: #9ca3af;
 }
 
-.details {
+aside {
   background: #111827;
   border-radius: 10px;
   padding: 15px;
 }
 
-.details img {
+aside img {
   width: 100%;
   border-radius: 10px;
   margin-bottom: 10px;
@@ -115,4 +118,35 @@ main {
   main {
     grid-template-columns: 1fr;
   }
+}
+.footer {
+  margin-top: 40px;
+  padding: 20px;
+  background: #020617;
+  border-top: 1px solid #1f2937;
+  text-align: center;
+}
+
+.footer-name {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.social-links a img {
+  width: 28px;
+  height: 28px;
+  filter: grayscale(100%);
+  transition: transform 0.2s, filter 0.2s;
+}
+
+.social-links a:hover img {
+  transform: scale(1.2);
+  filter: grayscale(0%);
 }

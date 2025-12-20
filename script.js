@@ -2,125 +2,170 @@ const API_KEY = "1c716f1e";
 
 const moviesContainer = document.getElementById("movies");
 const detailsContainer = document.getElementById("details");
-const input = document.getElementById("searchInput");
-const searchBtn = document.getElementById("searchBtn");
+const searchInput = document.getElementById("searchInput");
+const genreSelect = document.getElementById("genreSelect");
+const homeBtn = document.getElementById("homeBtn");
 const message = document.getElementById("message");
 const resultsTitle = document.getElementById("resultsTitle");
 
-let currentMovies = [];
+let allMovies = [];
+let searchTimeout = null;
 
-// Fetch default movies on page load
-async function fetchTrendingMovies() {
+// ===== Helpers =====
+const currentYear = new Date().getFullYear();
+
+function showMessage(text) {
+  message.textContent = text;
+}
+
+// ===== Fetch Best Movies of This Year =====
+async function fetchBestMoviesThisYear() {
   try {
-    message.textContent = "Loading movies...";
-    const response = await fetch(
-      `https://www.omdbapi.com/?apikey=${API_KEY}&s=batman`
+    showMessage("Loading best movies...");
+    resultsTitle.textContent = `Best Movies of ${currentYear}`;
+    searchInput.value = "";
+    genreSelect.value = "all";
+    detailsContainer.innerHTML = "<p>Select a movie to see details.</p>";
+
+    const res = await fetch(
+      `https://www.omdbapi.com/?apikey=${API_KEY}&s=movie&y=${currentYear}`
     );
-    const data = await response.json();
+    const data = await res.json();
 
     if (data.Response === "False") {
-      message.textContent = "No movies found.";
+      showMessage("No movies found.");
       return;
     }
 
-    currentMovies = data.Search;
-    renderMovies(currentMovies);
-    message.textContent = "";
-  } catch (error) {
-    message.textContent = "Network error. Please try again.";
+    const movies = data.Search.slice(0, 8);
+
+    allMovies = await Promise.all(
+      movies.map(async m => {
+        const d = await fetch(
+          `https://www.omdbapi.com/?apikey=${API_KEY}&i=${m.imdbID}`
+        ).then(r => r.json());
+
+        return {
+          ...m,
+          rating: parseFloat(d.imdbRating) || 0,
+          genres: d.Genre ? d.Genre.split(", ").map(g => g.trim()) : []
+        };
+      })
+    );
+
+    allMovies.sort((a, b) => b.rating - a.rating);
+    renderMovies(allMovies);
+    showMessage("");
+  } catch {
+    showMessage("Network error.");
   }
 }
 
-// Render movie cards
-function renderMovies(movies) {
+// ===== Render Movies =====
+function renderMovies(list) {
   moviesContainer.innerHTML = "";
 
-  movies.forEach(movie => {
+  list.forEach(movie => {
     const card = document.createElement("div");
     card.className = "movie-card";
-
     card.innerHTML = `
-      <img src="${
-        movie.Poster !== "N/A"
-          ? movie.Poster
-          : "https://via.placeholder.com/300x450"
-      }" />
+      <img src="${movie.Poster !== "N/A" ? movie.Poster : "https://via.placeholder.com/300x450"}">
       <div class="info">
         <h4>${movie.Title}</h4>
         <p>${movie.Year}</p>
       </div>
     `;
-
-    card.addEventListener("click", () => fetchMovieDetails(movie.imdbID));
+    card.onclick = () => fetchMovieDetails(movie.imdbID);
     moviesContainer.appendChild(card);
   });
 }
 
-// Fetch movie details
+// ===== Fetch Movie Details =====
 async function fetchMovieDetails(id) {
-  try {
-    const response = await fetch(
-      `https://www.omdbapi.com/?apikey=${API_KEY}&i=${id}&plot=full`
-    );
-    const movie = await response.json();
+  const res = await fetch(
+    `https://www.omdbapi.com/?apikey=${API_KEY}&i=${id}&plot=full`
+  );
+  const m = await res.json();
 
-    detailsContainer.innerHTML = `
-      <img src="${
-        movie.Poster !== "N/A"
-          ? movie.Poster
-          : "https://via.placeholder.com/300x450"
-      }" />
-      <h3>${movie.Title} (${movie.Year})</h3>
-      <p><strong>Genre:</strong> ${movie.Genre}</p>
-      <p><strong>Actors:</strong> ${movie.Actors}</p>
-      <p><strong>Ratings:</strong> ${
-        movie.imdbRating || "N/A"
-      }</p>
-      <p>${movie.Plot}</p>
-    `;
-  } catch (error) {
-    detailsContainer.innerHTML =
-      "<p>Error loading movie details.</p>";
+  detailsContainer.innerHTML = `
+    <img src="${m.Poster !== "N/A" ? m.Poster : "https://via.placeholder.com/300x450"}">
+    <h3>${m.Title} (${m.Year})</h3>
+    <p><strong>Genre:</strong> ${m.Genre}</p>
+    <p><strong>Actors:</strong> ${m.Actors}</p>
+    <p><strong>Rating:</strong> ${m.imdbRating}</p>
+    <p>${m.Plot}</p>
+  `;
+}
+
+// ===== Debounced Search =====
+searchInput.addEventListener("input", () => {
+  clearTimeout(searchTimeout);
+
+  const query = searchInput.value.trim();
+  if (query.length < 3) return;
+
+  searchTimeout = setTimeout(() => {
+    searchMovies(query);
+  }, 600);
+});
+
+// ===== Search Movies =====
+async function searchMovies(query) {
+  try {
+    showMessage("Searching...");
+    resultsTitle.textContent = `Search Results for "${query}"`;
+
+    const res = await fetch(
+      `https://www.omdbapi.com/?apikey=${API_KEY}&s=${query}`
+    );
+    const data = await res.json();
+
+    if (data.Response === "False") {
+      renderMovies([]);
+      showMessage("No movies found.");
+      return;
+    }
+
+    const movies = data.Search.slice(0, 10);
+
+    allMovies = await Promise.all(
+      movies.map(async m => {
+        const d = await fetch(
+          `https://www.omdbapi.com/?apikey=${API_KEY}&i=${m.imdbID}`
+        ).then(r => r.json());
+
+        return {
+          ...m,
+          genres: d.Genre ? d.Genre.split(", ").map(g => g.trim()) : []
+        };
+      })
+    );
+
+    renderMovies(allMovies);
+    showMessage("");
+  } catch {
+    showMessage("Network error.");
   }
 }
 
-// Filter movies locally
-input.addEventListener("input", () => {
-  const query = input.value.toLowerCase();
-  const filtered = currentMovies.filter(movie =>
-    movie.Title.toLowerCase().includes(query)
+// ===== Genre Filter =====
+genreSelect.addEventListener("change", () => {
+  const genre = genreSelect.value;
+
+  if (genre === "all") {
+    renderMovies(allMovies);
+    return;
+  }
+
+  const filtered = allMovies.filter(m =>
+    m.genres.includes(genre)
   );
 
   renderMovies(filtered);
 });
 
-// Search online using API
-searchBtn.addEventListener("click", async () => {
-  const query = input.value.trim();
-  if (!query) return;
+// ===== Home Button =====
+homeBtn.addEventListener("click", fetchBestMoviesThisYear);
 
-  try {
-    resultsTitle.textContent = `Search Results for "${query}"`;
-    message.textContent = "Searching...";
-
-    const response = await fetch(
-      `https://www.omdbapi.com/?apikey=${API_KEY}&s=${query}`
-    );
-    const data = await response.json();
-
-    if (data.Response === "False") {
-      message.textContent = "No movies found online.";
-      moviesContainer.innerHTML = "";
-      return;
-    }
-
-    currentMovies = data.Search;
-    renderMovies(currentMovies);
-    message.textContent = "";
-  } catch (error) {
-    message.textContent = "Network error. Please try again.";
-  }
-});
-
-// Initial load
-fetchTrendingMovies();
+// Initial Load
+fetchBestMoviesThisYear();

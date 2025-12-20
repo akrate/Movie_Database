@@ -8,30 +8,65 @@
 </head>
 <body>
 
-  <header>
-    <h1>🎬 Movie Database</h1>
-    <div class="search-bar">
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="Filter movies or search online..."
-      />
-      <button id="searchBtn">Search</button>
-    </div>
-    <p id="message" class="message"></p>
-  </header>
+<header>
+  <h1>🎬 Movie Database</h1>
 
-  <main>
-    <section class="results">
-      <h2 id="resultsTitle">Trending Movies</h2>
-      <div id="movies" class="movies"></div>
-    </section>
+  <div class="controls">
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search movies..."
+    />
 
-    <aside id="details" class="details">
-      <p>Select a movie to see details.</p>
-    </aside>
-  </main>
+    <select id="genreSelect">
+      <option value="all">All Genres</option>
+      <option value="Action">Action</option>
+      <option value="Drama">Drama</option>
+      <option value="Comedy">Comedy</option>
+      <option value="Horror">Horror</option>
+      <option value="Sci-Fi">Sci-Fi</option>
+      <option value="Thriller">Thriller</option>
+    </select>
 
-  <script src="script.js"></script>
+    <button id="homeBtn">Home</button>
+  </div>
+
+  <p id="message" class="message"></p>
+</header>
+
+<main>
+  <section>
+    <h2 id="resultsTitle">Best Movies of This Year</h2>
+    <div id="movies" class="movies"></div>
+  </section>
+
+  <aside id="details">
+    <p>Select a movie to see details.</p>
+  </aside>
+</main>
+
+<script src="script.js"></script>
+<footer class="footer">
+  <p class="footer-name">© 2025 | Built by Oussama</p>
+
+  <div class="social-links">
+    <a href="https://www.instagram.com/oussa_maakrate?utm_source=qr&igsh=NDB6eXNrczR6MHM5" target="_blank" aria-label="Instagram">
+      <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram">
+    </a>
+
+    <a href="https://www.linkedin.com/in/oussama-akrate-515614287/" target="_blank" aria-label="LinkedIn">
+      <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn">
+    </a>
+
+    <a href="https://github.com/akrate" target="_blank" aria-label="GitHub">
+      <img src="https://cdn-icons-png.flaticon.com/512/733/733553.png" alt="GitHub">
+    </a>
+    <a href="https://wa.me/212697435506" target="_blank" aria-label="WhatsApp">
+      <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp">
+    </a>
+
+  </div>
+</footer>
+
 </body>
 </html>
