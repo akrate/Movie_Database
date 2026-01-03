@@ -20,8 +20,6 @@ let currentPage = 1;
 let totalResults = 0;
 let currentQuery = "";
 
-const currentYear = new Date().getFullYear();
-
 // ===== HELPERS =====
 function showMessage(text) {
   message.textContent = text;
@@ -32,13 +30,34 @@ function togglePagination(show) {
   nextBtn.style.display = show ? "inline-block" : "none";
 }
 
-// 🔥 Generate poster (STABLE SERVICE)
+// ===== RANDOM SEARCH =====
+function getRandomSearchTerm() {
+  const terms = [
+    "love",
+    "war",
+    "man",
+    "life",
+    "dark",
+    "night",
+    "day",
+    "world",
+    "girl",
+    "boy",
+    "dream",
+    "time",
+    "king",
+    "lost",
+    "hero",
+  ];
+  return terms[Math.floor(Math.random() * terms.length)];
+}
+
+// ===== POSTER HANDLING (ALWAYS WORKS) =====
 function generatePoster(movie) {
   const text = encodeURIComponent(`${movie.Title} (${movie.Year})`);
   return `https://placehold.co/300x450/020617/ffffff?text=${text}`;
 }
 
-// 🔥 Always returns a valid image
 function getPoster(movie) {
   if (
     movie.Poster &&
@@ -64,18 +83,21 @@ nextBtn.addEventListener("click", () => {
   }
 });
 
-// ===== FETCH BEST MOVIES =====
-async function fetchBestMoviesThisYear() {
+// ===== RANDOM HOME MOVIES =====
+async function fetchRandomMovies() {
   try {
     togglePagination(false);
-    showMessage("Loading best movies...");
-    resultsTitle.textContent = `Best Movies of ${currentYear}`;
+    showMessage("Loading movies...");
+    resultsTitle.textContent = "🎬 Discover Movies";
     searchInput.value = "";
     genreSelect.value = "all";
     detailsContainer.innerHTML = "<p>Select a movie to see details.</p>";
 
+    const term = getRandomSearchTerm();
+    const page = Math.floor(Math.random() * 5) + 1;
+
     const res = await fetch(
-      `https://www.omdbapi.com/?apikey=${API_KEY}&s=movie&y=${currentYear}`
+      `https://www.omdbapi.com/?apikey=${API_KEY}&s=${term}&page=${page}`
     );
     const data = await res.json();
 
@@ -105,13 +127,10 @@ function renderMovies(list) {
     );
 
     card.innerHTML = `
-      <img src="${getPoster(movie)}"
-           onerror="this.src='https://placehold.co/300x450/020617/ffffff?text=No+Poster'">
-
+      <img src="${getPoster(movie)}">
       <button class="fav-btn ${isFav ? "active" : ""}">
         ${isFav ? "⭐" : "☆"}
       </button>
-
       <div class="info">
         <h4>${movie.Title}</h4>
         <p>${movie.Year}</p>
@@ -138,9 +157,7 @@ async function fetchMovieDetails(id) {
     const m = await res.json();
 
     detailsContainer.innerHTML = `
-      <img src="${getPoster(m)}"
-           onerror="this.src='https://placehold.co/300x450/020617/ffffff?text=No+Poster'">
-
+      <img src="${getPoster(m)}">
       <h3>${m.Title} (${m.Year})</h3>
       <p><strong>Genre:</strong> ${m.Genre}</p>
       <p><strong>Actors:</strong> ${m.Actors}</p>
@@ -200,12 +217,6 @@ async function searchMovies(query, page = 1) {
 genreSelect.addEventListener("change", () => {
   const genre = genreSelect.value;
   if (genre === "all") renderMovies(allMovies);
-  else
-    renderMovies(
-      allMovies.filter((m) =>
-        m.Genre?.includes(genre)
-      )
-    );
 });
 
 // ===== FAVORITES =====
@@ -231,7 +242,7 @@ favBtn.addEventListener("click", () => {
 });
 
 // ===== HOME =====
-homeBtn.addEventListener("click", fetchBestMoviesThisYear);
+homeBtn.addEventListener("click", fetchRandomMovies);
 
 // ===== INIT =====
-fetchBestMoviesThisYear();
+fetchRandomMovies();
