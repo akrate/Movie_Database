@@ -32,12 +32,22 @@ function togglePagination(show) {
   nextBtn.style.display = show ? "inline-block" : "none";
 }
 
-function safePoster(url) {
-  if (!url || url === "N/A") return null;
-  if (url.startsWith("http://")) {
-    return url.replace("http://", "https://");
+// 🔥 Generate poster إذا ما كايناش
+function generatePoster(movie) {
+  const text = encodeURIComponent(`${movie.Title}\n(${movie.Year})`);
+  return `https://via.placeholder.com/300x450/020617/ffffff?text=${text}`;
+}
+
+// 🔥 Poster آمن 100%
+function getPoster(movie) {
+  if (
+    movie.Poster &&
+    movie.Poster !== "N/A" &&
+    movie.Poster.startsWith("https://")
+  ) {
+    return movie.Poster;
   }
-  return url;
+  return generatePoster(movie);
 }
 
 // ===== PAGINATION =====
@@ -74,23 +84,7 @@ async function fetchBestMoviesThisYear() {
       return;
     }
 
-    const movies = data.Search.slice(0, 8);
-
-    allMovies = await Promise.all(
-      movies.map(async (m) => {
-        const d = await fetch(
-          `https://www.omdbapi.com/?apikey=${API_KEY}&i=${m.imdbID}`
-        ).then((r) => r.json());
-
-        return {
-          ...m,
-          rating: parseFloat(d.imdbRating) || 0,
-          genres: d.Genre ? d.Genre.split(", ").map((g) => g.trim()) : [],
-        };
-      })
-    );
-
-    allMovies.sort((a, b) => b.rating - a.rating);
+    allMovies = data.Search;
     renderMovies(allMovies);
     showMessage("");
   } catch {
@@ -98,53 +92,40 @@ async function fetchBestMoviesThisYear() {
   }
 }
 
-// ===== RENDER MOVIES (PRELOAD IMAGE FIRST) =====
+// ===== RENDER MOVIES =====
 function renderMovies(list) {
   moviesContainer.innerHTML = "";
 
   list.forEach((movie) => {
-    const posterUrl = safePoster(movie.Poster);
-    if (!posterUrl) return; // بلا image → ما يتزادش
+    const card = document.createElement("div");
+    card.className = "movie-card";
 
-    const img = new Image();
-    img.src = posterUrl;
+    const isFav = favorites.some(
+      (f) => f.imdbID === movie.imdbID
+    );
 
-    img.onload = () => {
-      const card = document.createElement("div");
-      card.className = "movie-card";
+    card.innerHTML = `
+      <img src="${getPoster(movie)}">
+      <button class="fav-btn ${isFav ? "active" : ""}">
+        ${isFav ? "⭐" : "☆"}
+      </button>
+      <div class="info">
+        <h4>${movie.Title}</h4>
+        <p>${movie.Year}</p>
+      </div>
+    `;
 
-      const isFav = favorites.some(
-        (f) => f.imdbID === movie.imdbID
-      );
-
-      card.innerHTML = `
-        <img src="${posterUrl}">
-        <button class="fav-btn ${isFav ? "active" : ""}">
-          ${isFav ? "⭐" : "☆"}
-        </button>
-        <div class="info">
-          <h4>${movie.Title}</h4>
-          <p>${movie.Year}</p>
-        </div>
-      `;
-
-      card.onclick = () => fetchMovieDetails(movie.imdbID);
-
-      card.querySelector(".fav-btn").onclick = (e) => {
-        e.stopPropagation();
-        toggleFavorite(movie);
-      };
-
-      moviesContainer.appendChild(card);
+    card.onclick = () => fetchMovieDetails(movie.imdbID);
+    card.querySelector(".fav-btn").onclick = (e) => {
+      e.stopPropagation();
+      toggleFavorite(movie);
     };
 
-    img.onerror = () => {
-      // الصورة فشلات → الفيلم ما كيبانش
-    };
+    moviesContainer.appendChild(card);
   });
 }
 
-// ===== MOVIE DETAILS (PRELOAD IMAGE) =====
+// ===== MOVIE DETAILS =====
 async function fetchMovieDetails(id) {
   try {
     const res = await fetch(
@@ -152,31 +133,14 @@ async function fetchMovieDetails(id) {
     );
     const m = await res.json();
 
-    const poster = safePoster(m.Poster);
-    if (!poster) {
-      detailsContainer.innerHTML =
-        "<p>No image available for this movie.</p>";
-      return;
-    }
-
-    const img = new Image();
-    img.src = poster;
-
-    img.onload = () => {
-      detailsContainer.innerHTML = `
-        <img src="${poster}">
-        <h3>${m.Title} (${m.Year})</h3>
-        <p><strong>Genre:</strong> ${m.Genre}</p>
-        <p><strong>Actors:</strong> ${m.Actors}</p>
-        <p><strong>Rating:</strong> ${m.imdbRating}</p>
-        <p>${m.Plot}</p>
-      `;
-    };
-
-    img.onerror = () => {
-      detailsContainer.innerHTML =
-        "<p>Image unavailable.</p>";
-    };
+    detailsContainer.innerHTML = `
+      <img src="${getPoster(m)}">
+      <h3>${m.Title} (${m.Year})</h3>
+      <p><strong>Genre:</strong> ${m.Genre}</p>
+      <p><strong>Actors:</strong> ${m.Actors}</p>
+      <p><strong>Rating:</strong> ${m.imdbRating}</p>
+      <p>${m.Plot}</p>
+    `;
   } catch {
     detailsContainer.innerHTML =
       "<p>Network error loading details.</p>";
@@ -186,7 +150,6 @@ async function fetchMovieDetails(id) {
 // ===== SEARCH =====
 searchInput.addEventListener("input", () => {
   clearTimeout(searchTimeout);
-
   const query = searchInput.value.trim();
   if (query.length < 3) return;
 
@@ -216,21 +179,9 @@ async function searchMovies(query, page = 1) {
     }
 
     totalResults = parseInt(data.totalResults);
-
-    allMovies = await Promise.all(
-      data.Search.map(async (m) => {
-        const d = await fetch(
-          `https://www.omdbapi.com/?apikey=${API_KEY}&i=${m.imdbID}`
-        ).then((r) => r.json());
-
-        return {
-          ...m,
-          genres: d.Genre ? d.Genre.split(", ").map((g) => g.trim()) : [],
-        };
-      })
-    );
-
+    allMovies = data.Search;
     renderMovies(allMovies);
+
     showMessage(
       `Page ${currentPage} of ${Math.ceil(totalResults / 10)}`
     );
@@ -242,11 +193,13 @@ async function searchMovies(query, page = 1) {
 // ===== GENRE FILTER =====
 genreSelect.addEventListener("change", () => {
   const genre = genreSelect.value;
-  if (genre === "all") {
-    renderMovies(allMovies);
-  } else {
-    renderMovies(allMovies.filter((m) => m.genres.includes(genre)));
-  }
+  if (genre === "all") renderMovies(allMovies);
+  else
+    renderMovies(
+      allMovies.filter((m) =>
+        m.Genre?.includes(genre)
+      )
+    );
 });
 
 // ===== FAVORITES =====
