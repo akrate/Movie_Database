@@ -7,9 +7,11 @@ const genreSelect = document.getElementById("genreSelect");
 const homeBtn = document.getElementById("homeBtn");
 const message = document.getElementById("message");
 const resultsTitle = document.getElementById("resultsTitle");
+const favBtn = document.getElementById("favBtn");
 
 let allMovies = [];
 let searchTimeout = null;
+let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 
 // ===== Helpers =====
 const currentYear = new Date().getFullYear();
@@ -68,17 +70,35 @@ function renderMovies(list) {
   list.forEach(movie => {
     const card = document.createElement("div");
     card.className = "movie-card";
+
+    const isFav = favorites.some(f => f.imdbID === movie.imdbID);
+
     card.innerHTML = `
       <img src="${movie.Poster !== "N/A" ? movie.Poster : "https://via.placeholder.com/300x450"}">
+
+      <button class="fav-btn ${isFav ? "active" : ""}">
+        ${isFav ? "⭐" : "☆"}
+      </button>
+
       <div class="info">
         <h4>${movie.Title}</h4>
         <p>${movie.Year}</p>
       </div>
     `;
+
+    // click على card = details
     card.onclick = () => fetchMovieDetails(movie.imdbID);
+
+    // click على star = favorite
+    card.querySelector(".fav-btn").onclick = (e) => {
+      e.stopPropagation();
+      toggleFavorite(movie);
+    };
+
     moviesContainer.appendChild(card);
   });
 }
+
 
 // ===== Fetch Movie Details =====
 async function fetchMovieDetails(id) {
@@ -162,6 +182,27 @@ genreSelect.addEventListener("change", () => {
   );
 
   renderMovies(filtered);
+});
+
+function toggleFavorite(movie) {
+  const index = favorites.findIndex(f => f.imdbID === movie.imdbID);
+
+  if (index === -1) {
+    favorites.push(movie);
+  } else {
+    favorites.splice(index, 1);
+  }
+
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+  renderMovies(allMovies);
+}
+
+
+favBtn.addEventListener("click", () => {
+  resultsTitle.textContent = "⭐ Your Favorites";
+  renderMovies(favorites);
+  detailsContainer.innerHTML = "<p>Select a movie to see details.</p>";
+  showMessage("");
 });
 
 // ===== Home Button =====
