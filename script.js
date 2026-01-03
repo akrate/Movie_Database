@@ -34,7 +34,15 @@ function togglePagination(show) {
   nextBtn.style.display = show ? "inline-block" : "none";
 }
 
-// ===== Pagination Events =====
+function safePoster(url) {
+  if (!url || url === "N/A") return PLACEHOLDER;
+  if (url.startsWith("http://")) {
+    return url.replace("http://", "https://");
+  }
+  return url;
+}
+
+// ===== Pagination =====
 prevBtn.addEventListener("click", () => {
   if (currentQuery && currentPage > 1) {
     searchMovies(currentQuery, currentPage - 1);
@@ -103,11 +111,10 @@ function renderMovies(list) {
     const isFav = favorites.some((f) => f.imdbID === movie.imdbID);
 
     card.innerHTML = `
-      <img src="${
-        movie.Poster && movie.Poster !== "N/A"
-          ? movie.Poster
-          : PLACEHOLDER
-      }">
+      <img 
+        src="${safePoster(movie.Poster)}"
+        onerror="this.onerror=null;this.src='${PLACEHOLDER}'"
+      >
 
       <button class="fav-btn ${isFav ? "active" : ""}">
         ${isFav ? "⭐" : "☆"}
@@ -145,11 +152,10 @@ async function fetchMovieDetails(id) {
     }
 
     detailsContainer.innerHTML = `
-      <img src="${
-        m.Poster && m.Poster !== "N/A"
-          ? m.Poster
-          : PLACEHOLDER
-      }">
+      <img 
+        src="${safePoster(m.Poster)}"
+        onerror="this.onerror=null;this.src='${PLACEHOLDER}'"
+      >
       <h3>${m.Title} (${m.Year})</h3>
       <p><strong>Genre:</strong> ${m.Genre}</p>
       <p><strong>Actors:</strong> ${m.Actors}</p>
