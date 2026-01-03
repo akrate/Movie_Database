@@ -175,3 +175,22 @@ aside img {
 }
 
 
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.pagination button {
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.pagination button:hover {
+  background: #1d4ed8;
+}

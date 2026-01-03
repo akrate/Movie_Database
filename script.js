@@ -8,10 +8,29 @@ const homeBtn = document.getElementById("homeBtn");
 const message = document.getElementById("message");
 const resultsTitle = document.getElementById("resultsTitle");
 const favBtn = document.getElementById("favBtn");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
 
 let allMovies = [];
 let searchTimeout = null;
 let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+let currentPage = 1;
+let totalResults = 0;
+let currentQuery = "";
+
+
+prevBtn.addEventListener("click", () => {
+  if (currentPage > 1) {
+    searchMovies(currentQuery, currentPage - 1);
+  }
+});
+
+nextBtn.addEventListener("click", () => {
+  const maxPage = Math.ceil(totalResults / 10);
+  if (currentPage < maxPage) {
+    searchMovies(currentQuery, currentPage + 1);
+  }
+});
 
 // ===== Helpers =====
 const currentYear = new Date().getFullYear();
@@ -130,13 +149,16 @@ searchInput.addEventListener("input", () => {
 });
 
 // ===== Search Movies =====
-async function searchMovies(query) {
+async function searchMovies(query, page = 1) {
   try {
     showMessage("Searching...");
+    currentQuery = query;
+    currentPage = page;
+
     resultsTitle.textContent = `Search Results for "${query}"`;
 
     const res = await fetch(
-      `https://www.omdbapi.com/?apikey=${API_KEY}&s=${query}`
+      `https://www.omdbapi.com/?apikey=${API_KEY}&s=${query}&page=${page}`
     );
     const data = await res.json();
 
@@ -146,7 +168,9 @@ async function searchMovies(query) {
       return;
     }
 
-    const movies = data.Search.slice(0, 10);
+    totalResults = parseInt(data.totalResults);
+
+    const movies = data.Search;
 
     allMovies = await Promise.all(
       movies.map(async m => {
@@ -162,11 +186,12 @@ async function searchMovies(query) {
     );
 
     renderMovies(allMovies);
-    showMessage("");
+    showMessage(`Page ${currentPage} of ${Math.ceil(totalResults / 10)}`);
   } catch {
     showMessage("Network error.");
   }
 }
+
 
 // ===== Genre Filter =====
 genreSelect.addEventListener("change", () => {
