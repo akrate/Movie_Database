@@ -1,6 +1,4 @@
 const API_KEY = "1c716f1e";
-const PLACEHOLDER =
-  "https://via.placeholder.com/300x450?text=No+Poster";
 
 // ===== DOM =====
 const moviesContainer = document.getElementById("movies");
@@ -35,7 +33,7 @@ function togglePagination(show) {
 }
 
 function safePoster(url) {
-  if (!url || url === "N/A") return PLACEHOLDER;
+  if (!url || url === "N/A") return null;
   if (url.startsWith("http://")) {
     return url.replace("http://", "https://");
   }
@@ -100,11 +98,14 @@ async function fetchBestMoviesThisYear() {
   }
 }
 
-// ===== Render Movies =====
+// ===== Render Movies (HIDE IF IMAGE FAILS) =====
 function renderMovies(list) {
   moviesContainer.innerHTML = "";
 
   list.forEach((movie) => {
+    const poster = safePoster(movie.Poster);
+    if (!poster) return; // ما عندوش image أصلاً
+
     const card = document.createElement("div");
     card.className = "movie-card";
 
@@ -112,8 +113,8 @@ function renderMovies(list) {
 
     card.innerHTML = `
       <img 
-        src="${safePoster(movie.Poster)}"
-        onerror="this.onerror=null;this.src='${PLACEHOLDER}'"
+        src="${poster}"
+        onerror="this.closest('.movie-card').remove()"
       >
 
       <button class="fav-btn ${isFav ? "active" : ""}">
@@ -145,16 +146,17 @@ async function fetchMovieDetails(id) {
     );
     const m = await res.json();
 
-    if (m.Response === "False") {
+    const poster = safePoster(m.Poster);
+    if (!poster) {
       detailsContainer.innerHTML =
-        "<p>Failed to load movie details.</p>";
+        "<p>No image available for this movie.</p>";
       return;
     }
 
     detailsContainer.innerHTML = `
       <img 
-        src="${safePoster(m.Poster)}"
-        onerror="this.onerror=null;this.src='${PLACEHOLDER}'"
+        src="${poster}"
+        onerror="this.parentElement.innerHTML='<p>Image unavailable.</p>'"
       >
       <h3>${m.Title} (${m.Year})</h3>
       <p><strong>Genre:</strong> ${m.Genre}</p>
@@ -227,13 +229,11 @@ async function searchMovies(query, page = 1) {
 // ===== Genre Filter =====
 genreSelect.addEventListener("change", () => {
   const genre = genreSelect.value;
-
   if (genre === "all") {
     renderMovies(allMovies);
-    return;
+  } else {
+    renderMovies(allMovies.filter((m) => m.genres.includes(genre)));
   }
-
-  renderMovies(allMovies.filter((m) => m.genres.includes(genre)));
 });
 
 // ===== Favorites =====
