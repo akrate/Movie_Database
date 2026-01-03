@@ -32,13 +32,13 @@ function togglePagination(show) {
   nextBtn.style.display = show ? "inline-block" : "none";
 }
 
-// 🔥 Generate poster إذا ما كايناش
+// 🔥 Generate poster (STABLE SERVICE)
 function generatePoster(movie) {
-  const text = encodeURIComponent(`${movie.Title}\n(${movie.Year})`);
-  return `https://via.placeholder.com/300x450/020617/ffffff?text=${text}`;
+  const text = encodeURIComponent(`${movie.Title} (${movie.Year})`);
+  return `https://placehold.co/300x450/020617/ffffff?text=${text}`;
 }
 
-// 🔥 Poster آمن 100%
+// 🔥 Always returns a valid image
 function getPoster(movie) {
   if (
     movie.Poster &&
@@ -105,10 +105,13 @@ function renderMovies(list) {
     );
 
     card.innerHTML = `
-      <img src="${getPoster(movie)}">
+      <img src="${getPoster(movie)}"
+           onerror="this.src='https://placehold.co/300x450/020617/ffffff?text=No+Poster'">
+
       <button class="fav-btn ${isFav ? "active" : ""}">
         ${isFav ? "⭐" : "☆"}
       </button>
+
       <div class="info">
         <h4>${movie.Title}</h4>
         <p>${movie.Year}</p>
@@ -116,6 +119,7 @@ function renderMovies(list) {
     `;
 
     card.onclick = () => fetchMovieDetails(movie.imdbID);
+
     card.querySelector(".fav-btn").onclick = (e) => {
       e.stopPropagation();
       toggleFavorite(movie);
@@ -134,7 +138,9 @@ async function fetchMovieDetails(id) {
     const m = await res.json();
 
     detailsContainer.innerHTML = `
-      <img src="${getPoster(m)}">
+      <img src="${getPoster(m)}"
+           onerror="this.src='https://placehold.co/300x450/020617/ffffff?text=No+Poster'">
+
       <h3>${m.Title} (${m.Year})</h3>
       <p><strong>Genre:</strong> ${m.Genre}</p>
       <p><strong>Actors:</strong> ${m.Actors}</p>
