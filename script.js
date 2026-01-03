@@ -12,7 +12,7 @@ const resultsTitle = document.getElementById("resultsTitle");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 
-// ===== State =====
+// ===== STATE =====
 let allMovies = [];
 let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 let searchTimeout = null;
@@ -22,7 +22,7 @@ let currentQuery = "";
 
 const currentYear = new Date().getFullYear();
 
-// ===== Helpers =====
+// ===== HELPERS =====
 function showMessage(text) {
   message.textContent = text;
 }
@@ -40,7 +40,7 @@ function safePoster(url) {
   return url;
 }
 
-// ===== Pagination =====
+// ===== PAGINATION =====
 prevBtn.addEventListener("click", () => {
   if (currentQuery && currentPage > 1) {
     searchMovies(currentQuery, currentPage - 1);
@@ -54,7 +54,7 @@ nextBtn.addEventListener("click", () => {
   }
 });
 
-// ===== Fetch Best Movies =====
+// ===== FETCH BEST MOVIES =====
 async function fetchBestMoviesThisYear() {
   try {
     togglePagination(false);
@@ -98,47 +98,53 @@ async function fetchBestMoviesThisYear() {
   }
 }
 
-// ===== Render Movies (HIDE IF IMAGE FAILS) =====
+// ===== RENDER MOVIES (PRELOAD IMAGE FIRST) =====
 function renderMovies(list) {
   moviesContainer.innerHTML = "";
 
   list.forEach((movie) => {
-    const poster = safePoster(movie.Poster);
-    if (!poster) return; // ما عندوش image أصلاً
+    const posterUrl = safePoster(movie.Poster);
+    if (!posterUrl) return; // بلا image → ما يتزادش
 
-    const card = document.createElement("div");
-    card.className = "movie-card";
+    const img = new Image();
+    img.src = posterUrl;
 
-    const isFav = favorites.some((f) => f.imdbID === movie.imdbID);
+    img.onload = () => {
+      const card = document.createElement("div");
+      card.className = "movie-card";
 
-    card.innerHTML = `
-      <img 
-        src="${poster}"
-        onerror="this.closest('.movie-card').remove()"
-      >
+      const isFav = favorites.some(
+        (f) => f.imdbID === movie.imdbID
+      );
 
-      <button class="fav-btn ${isFav ? "active" : ""}">
-        ${isFav ? "⭐" : "☆"}
-      </button>
+      card.innerHTML = `
+        <img src="${posterUrl}">
+        <button class="fav-btn ${isFav ? "active" : ""}">
+          ${isFav ? "⭐" : "☆"}
+        </button>
+        <div class="info">
+          <h4>${movie.Title}</h4>
+          <p>${movie.Year}</p>
+        </div>
+      `;
 
-      <div class="info">
-        <h4>${movie.Title}</h4>
-        <p>${movie.Year}</p>
-      </div>
-    `;
+      card.onclick = () => fetchMovieDetails(movie.imdbID);
 
-    card.onclick = () => fetchMovieDetails(movie.imdbID);
+      card.querySelector(".fav-btn").onclick = (e) => {
+        e.stopPropagation();
+        toggleFavorite(movie);
+      };
 
-    card.querySelector(".fav-btn").onclick = (e) => {
-      e.stopPropagation();
-      toggleFavorite(movie);
+      moviesContainer.appendChild(card);
     };
 
-    moviesContainer.appendChild(card);
+    img.onerror = () => {
+      // الصورة فشلات → الفيلم ما كيبانش
+    };
   });
 }
 
-// ===== Movie Details =====
+// ===== MOVIE DETAILS (PRELOAD IMAGE) =====
 async function fetchMovieDetails(id) {
   try {
     const res = await fetch(
@@ -153,24 +159,31 @@ async function fetchMovieDetails(id) {
       return;
     }
 
-    detailsContainer.innerHTML = `
-      <img 
-        src="${poster}"
-        onerror="this.parentElement.innerHTML='<p>Image unavailable.</p>'"
-      >
-      <h3>${m.Title} (${m.Year})</h3>
-      <p><strong>Genre:</strong> ${m.Genre}</p>
-      <p><strong>Actors:</strong> ${m.Actors}</p>
-      <p><strong>Rating:</strong> ${m.imdbRating}</p>
-      <p>${m.Plot}</p>
-    `;
+    const img = new Image();
+    img.src = poster;
+
+    img.onload = () => {
+      detailsContainer.innerHTML = `
+        <img src="${poster}">
+        <h3>${m.Title} (${m.Year})</h3>
+        <p><strong>Genre:</strong> ${m.Genre}</p>
+        <p><strong>Actors:</strong> ${m.Actors}</p>
+        <p><strong>Rating:</strong> ${m.imdbRating}</p>
+        <p>${m.Plot}</p>
+      `;
+    };
+
+    img.onerror = () => {
+      detailsContainer.innerHTML =
+        "<p>Image unavailable.</p>";
+    };
   } catch {
     detailsContainer.innerHTML =
       "<p>Network error loading details.</p>";
   }
 }
 
-// ===== Search =====
+// ===== SEARCH =====
 searchInput.addEventListener("input", () => {
   clearTimeout(searchTimeout);
 
@@ -226,7 +239,7 @@ async function searchMovies(query, page = 1) {
   }
 }
 
-// ===== Genre Filter =====
+// ===== GENRE FILTER =====
 genreSelect.addEventListener("change", () => {
   const genre = genreSelect.value;
   if (genre === "all") {
@@ -236,7 +249,7 @@ genreSelect.addEventListener("change", () => {
   }
 });
 
-// ===== Favorites =====
+// ===== FAVORITES =====
 function toggleFavorite(movie) {
   const index = favorites.findIndex(
     (f) => f.imdbID === movie.imdbID
@@ -258,8 +271,8 @@ favBtn.addEventListener("click", () => {
   showMessage("");
 });
 
-// ===== Home =====
+// ===== HOME =====
 homeBtn.addEventListener("click", fetchBestMoviesThisYear);
 
-// ===== Init =====
+// ===== INIT =====
 fetchBestMoviesThisYear();
