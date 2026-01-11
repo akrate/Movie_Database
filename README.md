@@ -13,12 +13,6 @@ The application allows users to:
 The project is built using **React** and the **OMDb API**.
 
 ---
-
-## 🚀 Live Demo
-
-👉 (Add your deployed link here – Vercel / Netlify)  
-Example: https://movie-db-react.vercel.app
-
 ---
 
 ## 🛠️ Technologies Used
@@ -27,7 +21,6 @@ Example: https://movie-db-react.vercel.app
 - **JavaScript (ES6)**
 - **CSS**
 - **OMDb API**
-- **Vite**
 - **LocalStorage**
 
 ---
@@ -77,9 +70,3 @@ Through this project, I learned how to:
 - Movie data depends on the OMDb API
 - Some movies may have missing posters or information
 - Pagination is not implemented
-
----
-
-## ▶️ How to Run the Project Locally
-
-1. Clone the
