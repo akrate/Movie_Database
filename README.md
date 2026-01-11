@@ -1,16 +1,85 @@
-# React + Vite
+# 🎬 Movie Database App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 📌 Project Overview
 
-Currently, two official plugins are available:
+This project is a **Movie Database web application** built as a **Frontend Capstone Project**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The application allows users to:
+- Discover random movies
+- Search for movies by title
+- View detailed information about movies
+- Save favorite movies
 
-## React Compiler
+The project is built using **React** and the **OMDb API**.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🚀 Live Demo
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+👉 (Add your deployed link here – Vercel / Netlify)  
+Example: https://movie-db-react.vercel.app
+
+---
+
+## 🛠️ Technologies Used
+
+- **React**
+- **JavaScript (ES6)**
+- **CSS**
+- **OMDb API**
+- **Vite**
+- **LocalStorage**
+
+---
+
+## ✨ Features
+
+### 🏠 Home Page
+- Displays a list of **random movies** when the app loads
+- Clicking the **Home button** reloads new random movies
+
+### 🔍 Search Movies
+- Users can search for movies by typing the movie title
+- Results are fetched from the **OMDb API**
+
+### 🎥 Movie Details
+- Clicking on a movie shows detailed information:
+  - Poster
+  - Genre
+  - Actors
+  - IMDb rating
+  - Movie plot
+- The layout remains stable when viewing movie details
+
+### ⭐ Favorites
+- Users can add or remove movies from their favorites
+- Favorite movies are saved in **localStorage**
+- Favorites remain saved even after refreshing the page
+
+### 📱 Responsive Design
+- The application works on desktop and mobile screens
+
+---
+
+## 🧠 What I Learned
+
+Through this project, I learned how to:
+- Build a React application from scratch
+- Work with external APIs
+- Manage application state using React hooks
+- Fix UI and layout issues
+- Create a clean and responsive user interface
+
+---
+
+## ⚠️ Known Limitations
+
+- Movie data depends on the OMDb API
+- Some movies may have missing posters or information
+- Pagination is not implemented
+
+---
+
+## ▶️ How to Run the Project Locally
+
+1. Clone the
