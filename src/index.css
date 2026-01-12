@@ -94,7 +94,7 @@ form button:active {
   background: #111827;
   border-radius: 10px;
   overflow: hidden;
-  height: 300px;                /* 🔥 يمنع الطول يتبدل */
+  height: 300px;                
   display: flex;
   flex-direction: column;
   position: relative;
@@ -102,7 +102,7 @@ form button:active {
 
 .movie-card img {
   width: 100%;
-  height: 200px;                /* 🔥 ثابت */
+  height: 200px;              
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -110,7 +110,7 @@ form button:active {
 .movie-card h4 {
   margin: 8px;
   font-size: 14px;
-  height: 34px;                 /* 🔥 يمنع العناوين الطويلة */
+  height: 34px;                
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
